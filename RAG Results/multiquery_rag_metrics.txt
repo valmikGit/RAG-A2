@@ -1,0 +1,11 @@
+=== RAG Evaluation Metrics (Gemini + RAGAS) ===
+Timestamp: 2025-11-11 15:53:46.425105
+
+RAG Generation Model: gemini-1.5-pro
+RAGAS Evaluation Model: gemini-1.5-pro
+
+Faithfulness (avg): nan
+Answer Relevancy (avg): nan
+
+Full Results:
+{'faithfulness': nan, 'answer_relevancy': nan}

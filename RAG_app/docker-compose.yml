@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # --- 1. FastAPI Backend Service ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rag_backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Pass your Gemini API Key directly to the backend container
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_RAG_MODEL=gemini-2.5-flash
+      - TOP_K=3
+    # Use 'volumes' if you want a persistent ChromaDB store 
+    # instead of the in-memory one used in the app.py
+    # volumes:
+    #   - ./chroma_data:/app/chroma_data
+    restart: always
+
+  # --- 2. Streamlit Frontend Service ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rag_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      # Tell the frontend where to find the backend service
+      - FASTAPI_HOST=backend
+      - FASTAPI_PORT=8000
+    depends_on:
+      - backend
+    restart: always
