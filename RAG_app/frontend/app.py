@@ -4,10 +4,14 @@ import json
 import os
 
 # --- Configuration ---
-# FastAPI service address (uses the service name defined in docker-compose)
-FASTAPI_HOST = os.getenv("FASTAPI_HOST", "backend")
+# FastAPI service address
+# For local development: localhost
+# For Docker: use service name "backend"
+FASTAPI_HOST = os.getenv("FASTAPI_HOST", "localhost")
 FASTAPI_PORT = os.getenv("FASTAPI_PORT", "8000")
 API_ENDPOINT = f"http://{FASTAPI_HOST}:{FASTAPI_PORT}/query"
+
+st.write(f"🔗 Connecting to backend at: {API_ENDPOINT}")
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="Gemini RAG Chatbot", layout="wide")
