@@ -1,5 +1,4 @@
 import os
-import os
 import uvicorn
 import chromadb
 from fastapi import FastAPI, HTTPException
@@ -17,7 +16,7 @@ except Exception:
 
 # --- Configuration ---
 # Use persistent ChromaDB if available (mounted into container at /app/chroma_data)
-COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "rag_collection")
+COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "anlp_rag_collection")
 CHROMA_PERSIST_PATH = os.getenv("CHROMA_PERSIST_PATH", "/app/chroma_data")
 EMBED_MODEL = os.getenv("CHROMA_EMBED_MODEL", "all-MiniLM-L6-v2")
 
@@ -38,16 +37,26 @@ try:
 
     # If the collection exists, get it; otherwise create with embedding function if possible
     existing = [c.name for c in CHROMA_CLIENT.list_collections()]
+    print(f"[DEBUG] Collections found in persistent store: {existing}")
+
     if COLLECTION_NAME in existing:
         CHROMA_COLLECTION = CHROMA_CLIENT.get_collection(COLLECTION_NAME)
         print(f"[INFO] Opened existing Chroma collection: {COLLECTION_NAME}")
     else:
-        # create collection; if embedding function is None, collection will default to text-only
-        if embedding_function:
-            CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(name=COLLECTION_NAME, embedding_function=embedding_function)
+        # If the user mounted a DB with a different collection name, prefer opening the first existing
+        # collection rather than creating a new empty one. This avoids accidentally shadowing an existing DB.
+        if existing:
+            chosen = existing[0]
+            CHROMA_COLLECTION = CHROMA_CLIENT.get_collection(chosen)
+            print(f"[INFO] Collection '{COLLECTION_NAME}' not found; opened existing collection '{chosen}' instead.")
+            COLLECTION_NAME = chosen
         else:
-            CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(name=COLLECTION_NAME)
-        print(f"[INFO] Created new Chroma collection: {COLLECTION_NAME} at {CHROMA_PERSIST_PATH}")
+            # create collection; if embedding function is None, collection will default to text-only
+            if embedding_function:
+                CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(name=COLLECTION_NAME, embedding_function=embedding_function)
+            else:
+                CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(name=COLLECTION_NAME)
+            print(f"[INFO] Created new Chroma collection: {COLLECTION_NAME} at {CHROMA_PERSIST_PATH}")
 
 except Exception as e:
     # Fallback to in-memory client if persistent client not available
@@ -65,7 +74,7 @@ except Exception as e:
 try:
     # Initialize Gemini client (will pick up GEMINI_API_KEY from env)
     GEMINI_CLIENT = genai.Client()
-    GEMINI_RAG_MODEL = os.getenv("GEMINI_RAG_MODEL", "gemini-2.5-flash")
+    GEMINI_RAG_MODEL = os.getenv("GEMINI_RAG_MODEL")
     TOP_K = int(os.getenv("TOP_K", 3))
 except Exception:
     # This will be caught when the app starts if GEMINI_API_KEY is missing

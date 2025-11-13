@@ -9,11 +9,8 @@ services:
     container_name: rag_backend
     ports:
       - "8000:8000"
-    environment:
-      # Pass your Gemini API Key directly to the backend container
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_RAG_MODEL=gemini-2.5-flash
-      - TOP_K=3
+    env_file:
+      - ./backend/.env
     # Use 'volumes' to use a persistent ChromaDB store created by your notebook.
     # This mounts the repo's VectorDB/chroma_Data (where your notebook writes the DB)
     # into the backend container at /app/chroma_data so the backend can open it.
