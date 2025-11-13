@@ -1,39 +1,69 @@
 import os
+import os
 import uvicorn
 import chromadb
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from google import genai
+import google.generativeai as genai
 from typing import List
 
-# --- Configuration ---
-# NOTE: ChromaDB client setup - assumes a persistent local client or network endpoint
-# For simplicity, this uses an in-memory client. Replace with your actual Chroma setup.
+# Optional: use sentence-transformers for embedding function if available
 try:
-    CHROMA_CLIENT = chromadb.Client()
-    COLLECTION_NAME = "rag_collection"
-    
-    # Mock data setup: You MUST replace this with your actual Chroma initialization
-    if COLLECTION_NAME not in [c.name for c in CHROMA_CLIENT.list_collections()]:
-        CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(COLLECTION_NAME)
-        # Add a simple document for testing
-        CHROMA_COLLECTION.add(
-            documents=["The capital of France is Paris. It is famous for the Eiffel Tower.", 
-                       "The fastest land animal is the cheetah.",
-                       "Gemini models are powerful large language models developed by Google."],
-            ids=["doc1", "doc2", "doc3"]
-        )
-    else:
+    from chromadb.utils.embedding_functions import (
+        SentenceTransformerEmbeddingFunction,
+    )
+except Exception:
+    SentenceTransformerEmbeddingFunction = None
+
+# --- Configuration ---
+# Use persistent ChromaDB if available (mounted into container at /app/chroma_data)
+COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "rag_collection")
+CHROMA_PERSIST_PATH = os.getenv("CHROMA_PERSIST_PATH", "/app/chroma_data")
+EMBED_MODEL = os.getenv("CHROMA_EMBED_MODEL", "all-MiniLM-L6-v2")
+
+CHROMA_COLLECTION = None
+CHROMA_CLIENT = None
+
+try:
+    # Try opening a persistent client (this will succeed if your notebook mounted DB into the folder)
+    CHROMA_CLIENT = chromadb.PersistentClient(path=CHROMA_PERSIST_PATH)
+
+    # Create an embedding function if available
+    embedding_function = None
+    if SentenceTransformerEmbeddingFunction is not None:
+        try:
+            embedding_function = SentenceTransformerEmbeddingFunction(model_name=EMBED_MODEL)
+        except Exception as e:
+            print(f"Warning: failed to initialize embedding function: {e}")
+
+    # If the collection exists, get it; otherwise create with embedding function if possible
+    existing = [c.name for c in CHROMA_CLIENT.list_collections()]
+    if COLLECTION_NAME in existing:
         CHROMA_COLLECTION = CHROMA_CLIENT.get_collection(COLLECTION_NAME)
+        print(f"[INFO] Opened existing Chroma collection: {COLLECTION_NAME}")
+    else:
+        # create collection; if embedding function is None, collection will default to text-only
+        if embedding_function:
+            CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(name=COLLECTION_NAME, embedding_function=embedding_function)
+        else:
+            CHROMA_COLLECTION = CHROMA_CLIENT.create_collection(name=COLLECTION_NAME)
+        print(f"[INFO] Created new Chroma collection: {COLLECTION_NAME} at {CHROMA_PERSIST_PATH}")
 
 except Exception as e:
-    print(f"Error initializing ChromaDB: {e}")
-    # In a production app, you might want to stop here or use a fallback
-    CHROMA_COLLECTION = None 
+    # Fallback to in-memory client if persistent client not available
+    print(f"Error initializing persistent ChromaDB at '{CHROMA_PERSIST_PATH}': {e}")
+    try:
+        CHROMA_CLIENT = chromadb.Client()
+        CHROMA_COLLECTION = CHROMA_CLIENT.get_or_create_collection(COLLECTION_NAME)
+        print("[INFO] Falling back to in-memory Chroma client.")
+    except Exception as e2:
+        print(f"Error initializing in-memory ChromaDB: {e2}")
+        CHROMA_COLLECTION = None
 
 
 # --- API Clients ---
 try:
+    # Initialize Gemini client (will pick up GEMINI_API_KEY from env)
     GEMINI_CLIENT = genai.Client()
     GEMINI_RAG_MODEL = os.getenv("GEMINI_RAG_MODEL", "gemini-2.5-flash")
     TOP_K = int(os.getenv("TOP_K", 3))
@@ -41,7 +71,6 @@ except Exception:
     # This will be caught when the app starts if GEMINI_API_KEY is missing
     print("[CRITICAL] Failed to initialize Gemini Client. Check GEMINI_API_KEY environment variable.")
     GEMINI_CLIENT = None
-
 # --- FastAPI Setup ---
 app = FastAPI(title="Gemini RAG Backend")
 
@@ -90,10 +119,11 @@ async def handle_rag_query(request: QueryRequest):
 
     # 1. Retrieve from ChromaDB
     try:
+        # Use the collection query API; request documents and metadatas
         retrieved = CHROMA_COLLECTION.query(
             query_texts=[user_query],
             n_results=TOP_K,
-            include=['documents']
+            include=["documents", "metadatas"]
         )
         contexts = retrieved.get("documents", [[]])[0]
         
@@ -113,6 +143,32 @@ async def handle_rag_query(request: QueryRequest):
         answer=answer,
         contexts=contexts
     )
+
+
+@app.get("/health")
+def health_check():
+    """Simple health endpoint."""
+    ok = True
+    details = {}
+    details["chroma_present"] = CHROMA_COLLECTION is not None
+    try:
+        details["collection_count"] = CHROMA_COLLECTION.count() if CHROMA_COLLECTION else 0
+    except Exception:
+        details["collection_count"] = None
+    details["gemini_initialized"] = GEMINI_CLIENT is not None
+    return {"ok": ok, "details": details}
+
+
+@app.get("/collections")
+def list_collections():
+    """Return basic info about collections available in the Chroma client."""
+    try:
+        cols = []
+        if CHROMA_CLIENT:
+            cols = [{"name": c.name, "metadata": getattr(c, 'metadata', None)} for c in CHROMA_CLIENT.list_collections()]
+        return {"collections": cols}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list collections: {e}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

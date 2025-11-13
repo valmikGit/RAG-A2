@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # --- 1. FastAPI Backend Service ---
@@ -14,10 +14,11 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_RAG_MODEL=gemini-2.5-flash
       - TOP_K=3
-    # Use 'volumes' if you want a persistent ChromaDB store 
-    # instead of the in-memory one used in the app.py
-    # volumes:
-    #   - ./chroma_data:/app/chroma_data
+    # Use 'volumes' to use a persistent ChromaDB store created by your notebook.
+    # This mounts the repo's VectorDB/chroma_Data (where your notebook writes the DB)
+    # into the backend container at /app/chroma_data so the backend can open it.
+    volumes:
+      - ../VectorDB/chroma_Data:/app/chroma_data
     restart: always
 
   # --- 2. Streamlit Frontend Service ---
