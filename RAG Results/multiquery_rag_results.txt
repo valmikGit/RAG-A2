@@ -3,7 +3,7 @@ RAG Multi-Query Evaluation Results
 
 Question 1: What are the main themes in Julius Caesar?
 Answer:
-I don't have enough information to answer this question. The context provided focuses on specific scenes and dialogues from the play, but it does not provide a comprehensive overview of the main themes in Julius Caesar. However, some potential themes that can be inferred from the context include conspiracy, loyalty, power, and the consequences of one's actions, but a more detailed analysis of the play as a whole would be necessary to identify the main themes.
+I don't have enough information to answer this question. The context provided only includes excerpts from specific scenes in Julius Caesar and does not provide a comprehensive overview of the play's themes.
 
 Top Source Chunk (Page 51):
 95
@@ -36,7 +36,7 @@ METELLUS
 
 Question 2: How does Brutus justify killing Caesar?
 Answer:
-According to the context, Brutus justifies killing Caesar by stating that he slew his "best lover" (Caesar) "for the good of Rome" and that he has "the same dagger for myself when it shall please my country to need my death" (Page 63, Act 3, Scene 2). This implies that Brutus believes the assassination was necessary for the well-being of Rome and that he is willing to sacrifice himself if needed. However, the context does not provide a detailed explanation of Brutus' motivations or the specific reasons why he considered Caesar a threat to Rome.
+According to the context, Brutus justifies killing Caesar by stating that he did it "for the good of Rome" (Page 63, ACT 3. SC. 2). He also mentions that he has "the same dagger for myself when it shall please my country to need my death", implying that he is willing to sacrifice himself for Rome if necessary. However, the full reasoning behind Brutus' actions is not fully explained in the provided context.
 
 Top Source Chunk (Page 63):
 119
@@ -66,7 +66,7 @@ BRUTUS
 
 Question 3: What role does Cassius play in the conspiracy?
 Answer:
-Cassius appears to be a key figure in the conspiracy against Caesar. He is mentioned as the one who "first did whet" the speaker (likely Brutus) "against Caesar" (Page 31), indicating that Cassius played a role in persuading or influencing Brutus to join the conspiracy. Additionally, Cassius is shown to be involved in the planning and execution of the conspiracy, as he is present when Popilius Lena wishes them success in their "enterprise" (Page 51) and is concerned that their purpose may be discovered. However, the exact nature and extent of Cassius' role in the conspiracy are not fully detailed in the provided context.
+Cassius appears to be a key figure in the conspiracy against Caesar. He is the one who "first did whet" the speaker (likely Brutus) "against Caesar" ([Page 31]), suggesting that Cassius played a role in convincing Brutus to join the conspiracy. Additionally, Cassius is shown to be interacting with other conspirators, such as Brutus and Metellus Cimber, and is concerned about the potential discovery of their plan ([Page 51]). However, the exact nature and extent of Cassius' role in the conspiracy are not fully elaborated upon in the provided context.
 
 Top Source Chunk (Page 31):
 Go to the gate; somebody knocks. Since Cassius first did whet me against Caesar,

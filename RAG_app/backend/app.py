@@ -30,8 +30,13 @@ CHROMA_CLIENT = None
 
 try:
     # ✅ READ-ONLY: Open persistent client from notebook's database
-    CHROMA_CLIENT = chromadb.PersistentClient(path=CHROMA_PERSIST_PATH)
-    print(f"[INFO] Opened ChromaDB from: {CHROMA_PERSIST_PATH}")
+    # Use Settings to ensure read-only access and prevent corruption
+    settings = chromadb.Settings(
+        allow_reset=False,
+        anonymized_telemetry=False
+    )
+    CHROMA_CLIENT = chromadb.PersistentClient(path=CHROMA_PERSIST_PATH, settings=settings)
+    print(f"[INFO] Opened ChromaDB in READ-ONLY mode from: {CHROMA_PERSIST_PATH}")
 
     # ✅ Create embedding function (must match notebook's embedding model)
     embedding_function = None

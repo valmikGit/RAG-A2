@@ -1,6 +1,6 @@
 === RAG Evaluation Metrics (Groq + RAGAS) ===
-Timestamp: 2025-11-13 20:20:04.501645
-Evaluation Duration: 2.41 minutes
+Timestamp: 2025-11-15 15:08:45.651460
+Evaluation Duration: 5.17 minutes
 
 RAG Generation Model: llama-3.3-70b-versatile
 RAGAS Evaluation Model: llama-3.3-70b-versatile
@@ -11,4 +11,4 @@ Faithfulness (avg): nan
 Answer Relevancy (avg): nan
 
 Full Results:
-{'faithfulness': nan, 'answer_relevancy': nan}
+{'faithfulness': 0.6869, 'answer_relevancy': 0.5974}
