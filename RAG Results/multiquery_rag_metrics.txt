@@ -1,14 +1,7 @@
-=== RAG Evaluation Metrics (Groq + RAGAS) ===
-Timestamp: 2025-11-16 02:07:06.764131
-Evaluation Duration: 12.06 minutes
-
-RAG Generation Model: llama-3.3-70b-versatile
-RAGAS Evaluation Model: llama-3.3-70b-versatile
-Rate Limiting: 7.5s delay between requests
-Cached Answers: cached_rag_answers.json
-
-Faithfulness (avg): nan
-Answer Relevancy (avg): nan
-
+=== RAG Evaluation Metrics ===
+Time: 2025-11-16 23:42:43.511005
+Duration: 5.72 minutes
+Faithfulness: 0.7504
+Answer Relevancy: 0.6913
 Full Results:
-{'faithfulness': nan, 'answer_relevancy': 0.3764}
+{'faithfulness': 0.7504, 'answer_relevancy': 0.6913}
