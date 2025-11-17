@@ -22,7 +22,7 @@ except Exception:
 # Use persistent ChromaDB from notebook's chroma_Data_v2 folder (READ-ONLY MODE)
 COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "anlp_rag_collection")
 # Point to the actual notebook database location
-CHROMA_PERSIST_PATH = os.getenv("CHROMA_PERSIST_PATH", "../../VectorDB/chroma_Data_v2")
+CHROMA_PERSIST_PATH = os.getenv("CHROMA_PERSIST_PATH", "../../VectorDB/chroma_Data_v5")
 EMBED_MODEL = os.getenv("CHROMA_EMBED_MODEL", "all-MiniLM-L6-v2")
 
 CHROMA_COLLECTION = None
