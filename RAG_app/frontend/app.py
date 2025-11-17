@@ -55,14 +55,47 @@ if st.button("Get RAG Answer"):
                 st.subheader("Answer")
                 st.info(result.get("answer", "No answer received."))
                 
-                # Display the contexts
+                # Display the contexts with metadata
                 st.subheader("Contexts Used")
-                contexts = result.get("contexts", [])
-                if contexts:
-                    for i, context in enumerate(contexts):
-                        st.markdown(f"**Chunk {i+1}:** {context}")
+                contexts_with_metadata = result.get("contexts_with_metadata", [])
+                
+                if contexts_with_metadata:
+                    for i, ctx_data in enumerate(contexts_with_metadata):
+                        with st.container():
+                            col1, col2 = st.columns([3, 1])
+                            
+                            with col1:
+                                st.markdown(f"**📄 Chunk {i+1}**")
+                                text = ctx_data.get("text", "")
+                                st.markdown(f"{text}")
+                            
+                            with col2:
+                                metadata = ctx_data.get("metadata", {})
+                                st.markdown("**📊 Metadata**")
+                                
+                                # Display Act/Scene if available
+                                if metadata.get("act"):
+                                    st.markdown(f"**🎭 Act:** {metadata['act']}")
+                                if metadata.get("scene"):
+                                    st.markdown(f"**🎬 Scene:** {metadata['scene']}")
+                                
+                                # Display page number
+                                if metadata.get("page_number"):
+                                    st.markdown(f"**📖 Page:** {metadata['page_number']}")
+                                
+                                # Display cleaned status
+                                if metadata.get("cleaned"):
+                                    st.markdown("**✅ Cleaned**")
+                            
+                            st.divider()
                 else:
-                    st.markdown("_No contexts were retrieved or used._")
+                    # Fallback to old format if metadata not available
+                    contexts = result.get("contexts", [])
+                    if contexts:
+                        for i, context in enumerate(contexts):
+                            st.markdown(f"**Chunk {i+1}:** {context}")
+                    else:
+                        st.markdown("_No contexts were retrieved or used._")
 
 # Optional: Display API endpoint status
 st.sidebar.markdown("---")

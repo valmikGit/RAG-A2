@@ -19,10 +19,10 @@ except Exception:
     SentenceTransformerEmbeddingFunction = None
 
 # --- Configuration ---
-# Use persistent ChromaDB from notebook's chroma_Data_v2 folder (READ-ONLY MODE)
+# Use persistent ChromaDB from notebook's chroma_Data_v_final folder (READ-ONLY MODE)
 COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "anlp_rag_collection")
-# Point to the actual notebook database location
-CHROMA_PERSIST_PATH = os.getenv("CHROMA_PERSIST_PATH", "../../VectorDB/chroma_Data_v5")
+# Point to the actual notebook database location (CLEANED VERSION)
+CHROMA_PERSIST_PATH = os.getenv("CHROMA_PERSIST_PATH", "../../VectorDB/chroma_Data_v_final")
 EMBED_MODEL = os.getenv("CHROMA_EMBED_MODEL", "all-MiniLM-L6-v2")
 
 CHROMA_COLLECTION = None
@@ -114,6 +114,7 @@ class QueryRequest(BaseModel):
 class RAGResponse(BaseModel):
     answer: str
     contexts: List[str]
+    contexts_with_metadata: List[dict] = []
 
 # --- RAG Core Logic ---
 def generate_rag_answer(user_query: str, contexts: List[str]) -> str:
@@ -155,12 +156,20 @@ async def handle_rag_query(request: QueryRequest):
             include=["documents", "metadatas"]
         )
         contexts = retrieved.get("documents", [[]])[0]
+        metadatas = retrieved.get("metadatas", [[]])[0]
         
         if not contexts:
              return RAGResponse(
                 answer="I could not find any relevant information in the knowledge base.",
-                contexts=[]
+                contexts=[],
+                contexts_with_metadata=[]
             )
+        
+        # Combine contexts with their metadata
+        contexts_with_metadata = [
+            {"text": ctx, "metadata": meta} 
+            for ctx, meta in zip(contexts, metadatas)
+        ]
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ChromaDB retrieval failed: {e}")
@@ -170,7 +179,8 @@ async def handle_rag_query(request: QueryRequest):
     
     return RAGResponse(
         answer=answer,
-        contexts=contexts
+        contexts=contexts,
+        contexts_with_metadata=contexts_with_metadata
     )
 
 
