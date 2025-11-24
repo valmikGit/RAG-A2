@@ -11,10 +11,10 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
-    # ✅ CRITICAL: Mount the correct database folder (chroma_Data_v2)
+    # ✅ CRITICAL: Mount the correct database folder (chroma_Data_v_final)
     # This mounts your notebook's database into the container
     volumes:
-      - ../VectorDB/chroma_Data_v2:/app/chroma_data
+      - ../VectorDB/chroma_Data_v_final:/app/chroma_data
     restart: always
 
   # --- 2. Streamlit Frontend Service ---

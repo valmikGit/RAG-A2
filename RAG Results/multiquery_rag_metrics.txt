@@ -1,0 +1,7 @@
+=== RAG Evaluation Metrics ===
+Time: 2025-11-17 22:49:41.673876
+Duration: 9.03 minutes
+Faithfulness: 0.7334
+Answer Relevancy: 0.7746
+Full Results:
+{'faithfulness': 0.7334, 'answer_relevancy': 0.7746}
